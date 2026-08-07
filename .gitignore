@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Virtual environments
+sun_env/
+.venv/
+venv/
+
+# Downloaded observational data
+data/*
+!data/.gitkeep
+
+# Generated figures
+figures/*
+!figures/.gitkeep
