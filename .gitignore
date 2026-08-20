@@ -18,3 +18,4 @@ data/*
 # Generated figures
 figures/*
 !figures/.gitkeep
+!figures/*.png
