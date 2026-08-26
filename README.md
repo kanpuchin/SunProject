@@ -163,3 +163,52 @@ VS Code에서는 `sun_env`를 Jupyter kernel로 선택하여 노트북을 실행
 - GOES X-ray flux와 AIA intensity 비교
 - 플레어 전후의 상승·peak·감쇠 시간 측정
 - PSP 또는 태양 전파 관측 자료와의 연계
+
+## Project 1: Multi-wavelength Evolution of a Solar Flare
+
+This project examines the temporal and morphological evolution of the
+2011 June 7 M2.5 solar flare in NOAA active region 11226 using
+SDO/AIA observations.
+
+### Data
+
+- Observation period: 06:05–07:10 UTC
+- Approximate cadence: 5 minutes
+- AIA channels: 171, 193, 211, and 304 Å
+- Flare start: 06:16 UTC
+- GOES peak: 06:41 UTC
+- Flare end: 06:59 UTC
+
+### Analysis
+
+- Selected observations nearest to fixed five-minute target times
+- Compared the flare morphology across four AIA channels
+- Calculated exposure-normalized mean intensity within a fixed ROI
+- Normalized each light curve to its pre-flare baseline
+- Compared the sampled peak times and relative intensity enhancements
+
+### Preliminary Results
+
+- The 171 and 304 Å channels reached their sampled maxima near
+  06:25 UTC.
+- The 211 Å channel reached its sampled maximum near 06:35 UTC.
+- The 193 Å channel reached its sampled maximum near 06:40 UTC,
+  approximately coincident with the GOES soft X-ray peak.
+- The 304 Å channel showed the largest relative enhancement, reaching
+  5.25 times its pre-flare baseline.
+
+These results are preliminary because of the five-minute sampling,
+broad AIA temperature responses, ROI dependence, possible saturation,
+and the use of Level 1 observations.
+
+### Figures
+
+![Multi-wavelength morphology](figures/aia_flare_multiwavelength_morphology.png)
+
+![Photometric ROI](figures/aia171_photometric_roi.png)
+
+![AIA light curves](figures/aia_flare_light_curves.png)
+
+### Notebook
+
+- [`02_aia_flare_evolution.ipynb`](notebooks/02_aia_flare_evolution.ipynb)
