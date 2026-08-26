@@ -2,7 +2,7 @@
 
 SunProject is a personal solar-data analysis project built with SunPy and publicly available solar observations.
 
-The project began with basic SDO/AIA image processing and progressed to a time-series analysis of a solar flare. The current repository covers FITS metadata, solar coordinate systems, multi-wavelength imaging, region-of-interest analysis, and exposure-normalized flare light curves.
+The project began with basic SDO/AIA image processing and progressed to a time-series analysis of a solar flare. The current repository covers FITS metadata, solar coordinate systems, multi-wavelength imaging, region-of-interest analysis, exposure-normalized flare light curves, and comparison with GOES soft X-ray observations.
 
 ## Project Goals
 
@@ -11,18 +11,19 @@ The project began with basic SDO/AIA image processing and progressed to a time-s
 * Compare solar structures across multiple SDO/AIA channels
 * Perform quantitative region-of-interest intensity analysis
 * Analyze the temporal evolution of an active region and solar flare
+* Compare remote-sensing observations from multiple instruments
 * Maintain reproducible notebooks and research notes
 * Build a foundation for future SDO, GOES, HMI, PSP, and solar-radio analyses
 
 ## Project Progress
 
-| Stage                        | Description                                                   | Status                              |
-| ---------------------------- | ------------------------------------------------------------- | ----------------------------------- |
-| SunPy warm-up                | FITS handling, metadata, coordinates, plotting, and submaps   | Completed                           |
-| AIA multi-wavelength warm-up | Channel comparison and ROI intensity statistics               | Completed                           |
-| Project 1                    | Multi-wavelength evolution of the 2011 June 7 flare           | Completed as a preliminary analysis |
-| Project 2                    | Comparison of AIA coronal structures with HMI magnetic fields | Planned                             |
-| Project 3                    | Introductory Parker Solar Probe analysis                      | Planned                             |
+| Stage                        | Description                                                                      | Status                              |
+| ---------------------------- | -------------------------------------------------------------------------------- | ----------------------------------- |
+| SunPy warm-up                | FITS handling, metadata, coordinates, plotting, and submaps                      | Completed                           |
+| AIA multi-wavelength warm-up | Channel comparison and ROI intensity statistics                                  | Completed                           |
+| Project 1                    | Multi-wavelength evolution of the 2011 June 7 flare and comparison with GOES/XRS | Completed as a preliminary analysis |
+| Project 2                    | Comparison of AIA coronal structures with HMI magnetic fields                    | Planned                             |
+| Project 3                    | Introductory Parker Solar Probe analysis                                         | Planned                             |
 
 ## Repository Structure
 
@@ -35,7 +36,8 @@ SunProject/
 │   ├── aia171_roi_intensity_profiles.png
 │   ├── aia171_photometric_roi.png
 │   ├── aia_flare_light_curves.png
-│   └── aia_flare_multiwavelength_morphology.png
+│   ├── aia_flare_multiwavelength_morphology.png
+│   └── aia_goes_light_curve_comparison.png
 ├── notebooks/
 │   ├── 01_sunpy_warmup.ipynb
 │   ├── SDO_AIA_warmup.ipynb
@@ -95,6 +97,8 @@ Main topics:
 * Correcting intensity measurements for exposure time
 * Constructing normalized multi-wavelength light curves
 * Comparing sampled peak times and relative enhancements
+* Retrieving and filtering GOES-15 XRS observations
+* Comparing AIA ROI light curves with GOES soft X-ray flux
 * Documenting the interpretation and limitations of the analysis
 
 ## Warm-up Analysis
@@ -154,12 +158,16 @@ The selected event is the M2.5 flare that occurred on 2011 June 7 in NOAA active
 
 ### Data Selection
 
-* Observation period: 06:05–07:10 UTC
-* Approximate sampling interval: 5 minutes
+* AIA observation period: 06:05–07:10 UTC
+* Approximate AIA sampling interval: 5 minutes
 * AIA channels: 171, 193, 211, and 304 Å
-* Number of selected observations: 14 per channel
-* Data series: `aia.lev1_euv_12s`
-* Image segment: `image`
+* Number of selected AIA observations: 14 per channel
+* AIA data series: `aia.lev1_euv_12s`
+* AIA image segment: `image`
+* GOES observation period: 05:30–07:30 UTC
+* GOES instrument: GOES-15 XRS
+* GOES channel: XRS-B, 1–8 Å
+* GOES time resolution: 1-minute averages
 
 The AIA channels were not always recorded at exactly the same time. For each target time, the nearest available observation was selected using the observation time stored in the FITS metadata.
 
@@ -209,13 +217,27 @@ The 193 Å channel reached its sampled maximum approximately 50 seconds before t
 
 The 304 Å channel showed the largest relative enhancement, reaching 5.25 times its pre-flare baseline.
 
+### Comparison with GOES Soft X-ray Flux
+
+![AIA and GOES light-curve comparison](figures/aia_goes_light_curve_comparison.png)
+
+The AIA light curves were compared with the one-minute averaged GOES-15 XRS-B flux in the 1–8 Å band.
+
+The 171 and 304 Å channels reached their sampled maxima approximately 15.8 and 15.5 minutes before the GOES soft X-ray maximum, respectively. Both maxima occurred during the rapid rise of the X-ray flux.
+
+The 211 Å channel reached its sampled maximum approximately 6.0 minutes before the GOES maximum, when the soft X-ray flux was approaching its broad peak. The 193 Å channel reached its sampled maximum only 0.8 minutes before the GOES maximum and can therefore be regarded as approximately coincident with it at the temporal resolution of this analysis.
+
+This comparison indicates that the sampled AIA maxima occurred during different phases of the soft X-ray evolution. The 171 and 304 Å enhancements were strongest during the rising phase, whereas the 193 Å maximum was most closely associated with the GOES soft X-ray maximum.
+
 ### Interpretation and Limitations
 
 The different light curves are broadly consistent with the distinct temperature responses and emitting structures sampled by the AIA channels. However, each AIA passband has a broad and sometimes multi-thermal response. A channel should therefore not be interpreted as representing plasma at one exact temperature.
 
 The relative peak amplitudes are not direct measurements of the relative energy emitted in the four channels. Each light curve was normalized by its own pre-flare baseline, and the channels have different instrumental responses and absolute intensity scales.
 
-The approximately five-minute sampling interval limits the temporal precision of the analysis. Variations between the selected observations cannot be resolved, and sub-minute differences should not be interpreted as significant physical delays.
+GOES/XRS measures the full-disk soft X-ray flux, whereas the AIA light curves were calculated from a selected active-region ROI. In addition, the AIA curves show intensities normalized to separate pre-flare baselines, while the GOES curve shows physical irradiance in W m^-2. Their amplitudes are therefore not directly comparable. The combined figure is used primarily to compare their temporal evolution.
+
+The approximately five-minute AIA sampling interval limits the temporal precision of the analysis. Variations between the selected observations cannot be resolved, and sub-minute differences should not be interpreted as significant physical delays.
 
 The results also depend on the size and position of the ROI. The selected region includes the flare core and surrounding coronal structures, so the light curves describe their combined evolution rather than emission from the flare kernel alone.
 
@@ -232,19 +254,21 @@ Finally, this preliminary analysis uses Level 1 AIA observations. More precise s
 
 ## Data
 
-The analyses use SDO/AIA FITS observations downloaded from JSOC.
+The analyses use SDO/AIA FITS observations downloaded from JSOC and GOES-15 XRS observations provided by NOAA.
 
-The FITS files are large and can be downloaded again when needed, so they are not included in this repository. The warm-up and flare data are stored locally in directories such as:
+The observation files are not included in this repository because they can be downloaded again when needed. The warm-up, flare, and GOES data are stored locally in directories such as:
 
 ```text
 data/
 ├── aia_multiwavelength/
-└── aia/
+├── aia/
+│   └── 20110607/
+│       ├── 171/
+│       ├── 193/
+│       ├── 211/
+│       └── 304/
+└── goes/
     └── 20110607/
-        ├── 171/
-        ├── 193/
-        ├── 211/
-        └── 304/
 ```
 
 The notebooks are executed from the `notebooks/` directory and use relative paths to access the data and figures.
@@ -265,6 +289,9 @@ The project uses the following Python packages:
 * Matplotlib
 * pandas
 * DRMS
+* h5netcdf
+* h5py
+* cdflib
 * Jupyter
 
 Activate the existing Conda environment and start Jupyter:
@@ -280,11 +307,11 @@ When using VS Code, select `sun_env` as the Jupyter kernel.
 
 The analysis cells were tested sequentially after restarting the Jupyter kernel.
 
-The data-download cells are disabled by default to avoid submitting repeated JSOC export requests. To reproduce the full workflow, download the required FITS files first and then run the analysis cells using the local observations.
+The data-download cells are disabled by default to avoid submitting repeated JSOC or NOAA download requests. To reproduce the full workflow, download the required AIA and GOES observations first and then run the analysis cells using the local files.
 
 JSOC exports depend on external server availability and may remain pending or fail temporarily. Individual failed downloads can be retried without repeating the complete export request.
 
-Because the FITS observations are not stored in the repository, cloning the repository alone is not sufficient to reproduce the figures without downloading the corresponding data.
+Because the observation files are not stored in the repository, cloning the repository alone is not sufficient to reproduce the figures without downloading the corresponding data.
 
 ## Next Steps
 
@@ -292,9 +319,7 @@ Planned extensions include:
 
 * Calibrating and registering the AIA observations to Level 1.5
 * Repeating the flare analysis with a finer cadence near the impulsive phase
-* Comparing AIA light curves with GOES soft X-ray flux
 * Testing the sensitivity of the results to the ROI definition
 * Tracking the ROI while accounting for solar rotation
 * Comparing AIA coronal structures with HMI magnetic-field observations
 * Connecting remote-sensing observations with Parker Solar Probe or solar-radio data
-
