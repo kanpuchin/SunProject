@@ -1,38 +1,68 @@
-# Questions for the Next Stage
+# Next Questions and Analysis Roadmap
 
-## 1. AIA 데이터 전처리
+This note records the questions resolved in the SunPy warm-up and Project 1, together with the most useful next steps.
 
-- JSOC에서 받은 AIA Level 1 자료에 `aia_prep()` 또는 `aiapy.calibrate`를 적용해야 하는 이유는 무엇인가?
-- Level 1과 Level 1.5 자료는 좌표 정렬, pixel scale, 회전 보정 측면에서 어떻게 다른가?
-- 서로 다른 시각과 파장의 영상을 정량적으로 비교하려면 어떤 보정이 필요한가?
-- AIA intensity를 비교할 때 노출시간으로 나누어 DN/s 단위로 변환해야 하는가?
+## Questions Resolved in Project 1
 
-## 2. 시계열 자료 정렬
+### How should observations from different AIA channels be time-matched?
 
-- 여러 시각의 AIA 영상에서 동일한 태양 영역을 어떻게 계속 추적할 수 있는가?
-- 태양의 differential rotation은 짧은 시계열과 긴 시계열 분석에 각각 어느 정도 영향을 미치는가?
-- `differential_rotate()` 또는 `propagate_with_solar_surface()`는 어떤 경우에 사용해야 하는가?
-- 관측 시각이 정확히 일치하지 않는 다파장 영상을 어느 정도 시간 차이까지 같은 시각의 자료로 간주할 수 있는가?
+Fixed-cadence JSOC sampling does not guarantee identical timestamps across channels. Project 1 therefore selected the locally available observation nearest to each target time using the observation time stored in the SunPy map. Small channel-to-channel differences of several seconds are acceptable for this preliminary five-minute-cadence comparison, but the actual timestamps must be reported.
 
-## 3. ROI와 intensity 측정
+### What should be done when a target sample is missing?
 
-- 고정된 helioprojective 좌표의 ROI와 태양 자전을 따라가는 ROI 중 어느 방법이 적절한가?
-- 활동영역의 크기나 형태가 시간에 따라 변할 때 ROI를 어떻게 정해야 하는가?
-- 평균, 중앙값, 총합 중 어떤 통계량이 활동영역의 시간 변화를 가장 잘 나타내는가?
-- 포화 픽셀이나 결측 픽셀이 포함된 시계열은 어떻게 처리해야 하는가?
-- 배경 코로나의 변화를 제거하기 위해 quiet-Sun ROI를 어떻게 활용할 수 있는가?
+Search a short interval around the target without cadence sampling, then select the nearest observation. This recovered a suitable 171 Å image near 06:30 UTC. Duplicate observations should be removed so that every target time contributes at most one image per channel.
 
-## 4. AIA 채널의 물리적 해석
+### How should AIA intensities be compared?
 
-- AIA 채널의 대표 형성 온도와 실제 temperature response function은 어떻게 다른가?
-- 하나의 AIA 채널에 여러 방출선이 기여할 때 intensity 증가를 온도 상승으로 해석할 수 있는가?
-- 171 Å, 193 Å, 304 Å에서 동일한 구조가 서로 다르게 보이는 이유를 어떻게 정량화할 수 있는가?
-- 플레어 또는 분출 과정에서 각 파장 채널의 peak 시각 차이는 어떤 물리적 의미를 가질 수 있는가?
+The mean data number in a fixed helioprojective ROI was divided by the exposure time and then normalized to a pre-flare baseline. This makes temporal changes easier to compare, but it does not constitute a full physical calibration between passbands.
 
-## 5. 다음 분석 목표
+### How do the AIA peaks compare with the GOES soft X-ray peak?
 
-- 활동영역의 AIA intensity light curve를 만들려면 적절한 cadence와 전체 관측 시간은 어느 정도인가?
-- AIA light curve와 GOES X-ray flux를 어떻게 시간적으로 정렬하고 비교할 수 있는가?
-- 플레어 전후의 intensity 증가율, peak time, decay time을 어떤 방식으로 측정할 수 있는가?
-- 단순한 ROI 분석에서 더 참신한 연구 질문으로 발전시키려면 어떤 추가 자료나 분석법이 필요한가?
-- 이후 SDO 분석을 PSP 또는 태양 전파 관측 자료와 어떻게 연결할 수 있는가?
+In the five-minute samples, 171 and 304 Å peaked about 16 minutes before the 06:41 UTC GOES peak, 211 Å peaked about 6 minutes before it, and 193 Å peaked within about 1 minute of it. These offsets describe the sampled ROI light curves and should not be interpreted as exact physical delays.
+
+## Immediate Validation Tasks
+
+- Repeat the analysis with a finer cadence around 06:15–06:45 UTC.
+- Process the AIA maps to a consistent Level 1.5 geometry using `aiapy.calibrate` before pixel-by-pixel comparison.
+- Inspect data-quality keywords and quantify saturated or invalid pixels at every time step.
+- Test several ROI sizes and positions, including a background-subtracted measurement.
+- Compare mean, median, and integrated intensity to determine sensitivity to bright or saturated pixels.
+- Estimate timing uncertainty from both cadence and channel-to-channel timestamp offsets.
+
+## Physical Questions
+
+- Why does the 304 Å ROI show the largest relative enhancement?
+- Which structures dominate the early 171 and 304 Å peaks?
+- Does the later 193 Å maximum reflect hotter plasma, a different structure, or the broad temperature response of the channel?
+- How much of each curve is controlled by plasma evolution versus changing morphology inside the fixed ROI?
+- Would a differential emission measure analysis change the temperature interpretation?
+
+## Possible Project 2 Directions
+
+### Active-region evolution with AIA and HMI
+
+- Track the active region while accounting for solar rotation.
+- Compare EUV intensity evolution with HMI line-of-sight magnetic field.
+- Measure magnetic-flux evolution before and after a selected flare.
+- Investigate whether morphological changes correspond to magnetic restructuring.
+
+### Higher-cadence flare timing
+
+- Download a shorter interval at substantially higher cadence.
+- Compare AIA derivatives or channel ratios with GOES XRS flux.
+- Measure rise, peak, and decay times with uncertainties.
+- Separate impulsive and gradual-phase behavior where possible.
+
+### Multi-instrument extension
+
+- Investigate available solar-radio observations for the event.
+- Examine whether an appropriate Parker Solar Probe interval offers a meaningful connection.
+- Define a scientific question before combining remote-sensing and in-situ data.
+
+## Questions for Research Guidance
+
+- Is ROI photometry an appropriate starting point for the intended scientific question?
+- Which calibration and uncertainty checks are essential before treating the timing differences quantitatively?
+- Would AIA–HMI active-region evolution or a higher-cadence flare study be the stronger next project?
+- Which result from Project 1 is most worth developing into a research-grade analysis?
+

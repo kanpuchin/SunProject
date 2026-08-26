@@ -1,10 +1,12 @@
-# SunPy Warm-up Summary
+# SunPy Study and Project 1 Summary
 
-## 1. FITS와 SunPy Map
+This note summarizes the main concepts learned during the SunPy warm-up and the methods and results developed in Project 1.
 
-FITS(Flexible Image Transport System)는 천문 관측 자료에 널리 사용되는 파일 형식이다. 하나의 FITS 파일에는 관측 영상뿐 아니라 관측 시각, 관측기기, 파장, 노출시간 및 좌표계 등의 메타데이터가 함께 저장된다.
+## 1. FITS Files and SunPy Maps
 
-SunPy에서는 `sunpy.map.Map()`을 사용하여 태양 영상 FITS 파일을 불러올 수 있다. 생성된 Map 객체는 영상 배열인 `data`, FITS 메타데이터인 `meta`, 관측 시각인 `date`, 관측 파장인 `wavelength` 등의 정보를 제공한다.
+FITS (Flexible Image Transport System) is a standard file format for astronomical observations. A FITS file can contain both an image and metadata such as the observation time, instrument, wavelength, exposure time, and coordinate-system information.
+
+SunPy loads solar FITS images as `Map` objects:
 
 ```python
 import sunpy.map
@@ -14,87 +16,164 @@ aia_map = sunpy.map.Map("aia_file.fits")
 print(aia_map.data.shape)
 print(aia_map.date)
 print(aia_map.wavelength)
-print(aia_map.meta)
+print(aia_map.exposure_time)
+print(aia_map.coordinate_frame)
 ```
 
-Map은 WCS(World Coordinate System) 정보를 포함하므로 픽셀 좌표를 태양 관측 좌표로 변환할 수 있다. 이번 실습에서는 helioprojective 좌표를 사용했으며, 좌표 단위는 주로 arcsec였다.
+A map contains WCS (World Coordinate System) information, which connects image pixels to solar coordinates. This project primarily used helioprojective Cartesian coordinates in arcseconds.
 
-## 2. 태양 영상 시각화와 부분 영역 추출
+## 2. Visualization and Spatial Selection
 
-SunPy Map은 Matplotlib과 연동하여 관측 좌표가 포함된 영상을 그릴 수 있다. `clip_interval`을 사용하면 극단적인 픽셀값의 영향을 줄여 영상 구조를 더 잘 보이게 할 수 있다.
+SunPy maps work with Matplotlib and WCSAxes:
 
 ```python
-import matplotlib.pyplot as plt
 import astropy.units as u
+import matplotlib.pyplot as plt
 
 fig = plt.figure()
 ax = fig.add_subplot(projection=aia_map)
 
 aia_map.plot(
     axes=ax,
-    clip_interval=(1, 99.9) * u.percent
+    clip_interval=(1, 99.9) * u.percent,
 )
-
 aia_map.draw_limb(axes=ax)
 
 plt.show()
 ```
 
-`SkyCoord`로 경계 좌표를 지정하고 `submap()`을 적용하면 동일한 태양 좌표 범위를 추출할 수 있다.
+Displayed white regions are not automatically saturated pixels. They can also result from the plotting normalization or clipping range.
+
+A region can be defined in helioprojective coordinates and extracted with `submap()`:
 
 ```python
 from astropy.coordinates import SkyCoord
 
 bottom_left = SkyCoord(
-    450 * u.arcsec,
-    -750 * u.arcsec,
-    frame=aia_map.coordinate_frame
+    600 * u.arcsec,
+    -430 * u.arcsec,
+    frame=aia_map.coordinate_frame,
 )
 
 top_right = SkyCoord(
-    1100 * u.arcsec,
-    -100 * u.arcsec,
-    frame=aia_map.coordinate_frame
+    820 * u.arcsec,
+    -260 * u.arcsec,
+    frame=aia_map.coordinate_frame,
 )
 
-cropped_map = aia_map.submap(
+roi_map = aia_map.submap(
     bottom_left,
-    top_right=top_right
+    top_right=top_right,
 )
 ```
 
-## 3. 태양 관측 자료 검색과 다운로드
+## 3. Searching for and Downloading Solar Data
 
-SunPy의 `Fido`는 여러 태양물리 데이터 제공처를 통합하여 검색하는 인터페이스이다. 검색 조건은 `sunpy.net.attrs`를 사용해 관측 시각, 관측기기 및 파장 등으로 지정한다.
+`Fido` provides a common interface to several solar-physics data services. The warm-up used VSO and JSOC searches, while Project 1 used JSOC directly for AIA data.
 
-VSO를 통한 검색은 여러 제공처의 자료를 통합하여 찾기에 편리하지만, 다운로드 서버 상태에 따라 오류가 발생할 수 있다. 이번 실습에서는 VSO 다운로드가 실패하여 JSOC에 직접 export 요청을 제출하는 방식으로 AIA Level 1 자료를 내려받았다.
+The following lessons were important:
 
-JSOC 검색 결과에서 `T_REC`는 일정한 cadence에 배치된 record time이다. 이것은 FITS 메타데이터에 기록된 실제 관측 시각과 몇 초 정도 다를 수 있다.
+- A successful VSO search does not guarantee a successful download.
+- A JSOC query should explicitly specify the series, wavelength, image segment, and registered email address.
+- `T_REC` is a nominal JSOC record time and may differ from the physical observation time.
+- `Map.date`, derived from the FITS metadata, was used for temporal comparisons.
+- Slicing a JSOC response is not a reliable way to export only selected records. A narrow search interval should be used instead.
+- A failed file transfer can be retried using the returned download-results object without submitting a new export.
 
-또한 JSOC 검색 결과를 slicing해도 선택한 행만 다운로드되는 것은 아니다. 특정 record 하나만 필요할 때는 검색 결과를 slicing하기보다 검색 시간 범위를 좁혀야 한다.
+## 4. AIA Multi-wavelength Observations
 
-## 4. AIA 다파장 영상
+SDO/AIA observes the solar atmosphere through multiple EUV passbands. Each channel has a broad and sometimes multi-thermal temperature response, so its representative temperature should be treated as an approximate diagnostic rather than an exact plasma temperature.
 
-SDO/AIA는 서로 다른 EUV 파장으로 태양 대기 구조를 관측한다. 각 채널은 특정 온도에만 반응하는 것이 아니라 넓은 온도 반응 함수를 가지므로, 대표 형성 온도는 근사적인 진단값으로 이해해야 한다.
-
-| Channel | Main line | Representative temperature | Main structures |
+| Channel | Major contribution | Representative temperature | Commonly observed structures |
 |---|---|---:|---|
-| AIA 171 Å | Fe IX | 약 0.6 MK | Quiet corona, coronal loops |
-| AIA 193 Å | Fe XII | 약 1.3 MK | Hotter and diffuse corona |
-| AIA 304 Å | He II | 약 0.05 MK | Chromosphere, transition region, prominence |
+| AIA 171 Å | Fe IX | approximately 0.6 MK | Quiet corona and coronal loops |
+| AIA 193 Å | Fe XII, with hot flare contributions | approximately 1.3 MK in the quiet corona | Coronal structures and flare emission |
+| AIA 211 Å | Fe XIV | approximately 2 MK | Hotter coronal structures |
+| AIA 304 Å | He II | approximately 0.05 MK | Chromosphere, transition region, and prominences |
 
-AIA 영상에 사용되는 색은 실제 가시광선 색이 아니라 파장을 구분하기 위한 false color이다.
+The colors used for AIA images are conventional false colors, not visible-light colors. SunPy applies wavelength-specific colormaps such as `sdoaia171`, `sdoaia193`, `sdoaia211`, and `sdoaia304`.
 
-SunPy는 FITS 메타데이터를 바탕으로 `sdoaia171`, `sdoaia193`, `sdoaia304` 등의 관례적인 colormap을 자동 적용한다.
+## 5. Warm-up ROI Analysis
 
-## 5. ROI intensity 분석
+The warm-up compared equal-sized active-region and quiet-Sun ROIs in an AIA 171 Å image.
 
-AIA 171 Å 영상에서 동일한 크기의 active-region ROI와 quiet-Sun ROI를 정하고 평균, 중앙값, 표준편차 등의 기초 통계량을 계산했다.
+Results:
 
-분석 결과 active-region ROI는 quiet-Sun ROI보다 평균 intensity가 약 6.94배, 중앙값이 약 4.70배 높았다.
+- Mean intensity ratio, active region divided by quiet Sun: **6.94**
+- Median intensity ratio, active region divided by quiet Sun: **4.70**
+- Pixels at the adopted saturation threshold in the active-region ROI: **167**
+- Corresponding pixel fraction: **0.595%**
 
-활동영역의 intensity profile에는 coronal loop와 밝은 국소 구조에 대응하는 큰 변동과 여러 peak가 나타났다. 반면 quiet-Sun profile은 상대적으로 낮고 균일했다.
+The active-region intensity profile contained large variations associated with coronal loops and compact bright structures. The quiet-Sun profile was fainter and more uniform. Because extreme pixels strongly affect the mean and standard deviation, the median was also used to compare typical ROI intensities.
 
-활동영역에는 16383 DN에 도달한 포화 픽셀이 167개 있었으며, 이는 유효 픽셀의 약 0.595%였다. 포화 픽셀은 평균과 표준편차를 증가시킬 수 있으므로, 이 경우 중앙값이 두 영역의 전형적인 밝기를 비교하는 더 안정적인 통계량이다.
+## 6. Project 1: Flare-event Selection
 
-이번 분석을 통해 영상의 색과 밝기를 정성적으로 관찰하는 것에서 나아가, ROI 통계와 1차원 intensity profile을 이용해 활동영역과 quiet Sun의 차이를 정량적으로 비교했다.
+Project 1 extended the single-image warm-up into a time-series analysis of the 2011 June 7 M2.5 flare in NOAA active region 11226.
+
+| Property | Value |
+|---|---|
+| Flare start | 06:16 UTC |
+| GOES peak | 06:41 UTC |
+| Flare end | 06:59 UTC |
+| Approximate location | Solar-X = 715.5 arcsec, Solar-Y = −339.8 arcsec |
+
+The event was selected from HEK records because its GOES class, active-region number, timing, and approximate helioprojective location were available.
+
+## 7. AIA Time-series Selection
+
+Project 1 used AIA 171, 193, 211, and 304 Å images from approximately 06:05 to 07:10 UTC with a target interval of five minutes.
+
+Fixed-time sampling did not always return one image for every target time. Two cases were encountered:
+
+- The 304 Å observations were offset from the initial sampling grid, so the search interval was shifted to match their record times.
+- The 171 Å search omitted the 06:30 target even though nearby observations existed. An image at 06:30:14 was found with an unsampled local search.
+
+For each target time, the nearest available observation was selected using `Map.date`. The final dataset contained 14 observations for each channel. Small inter-channel time offsets were acceptable for the five-minute trend analysis but cannot be used to measure sub-minute physical delays.
+
+## 8. Exposure-normalized ROI Light Curves
+
+A fixed photometric ROI covered Solar-X = 600–820 arcsec and Solar-Y = −430 to −260 arcsec.
+
+For each image, the mean ROI intensity was divided by the exposure time. Each channel was then divided by its own pre-flare baseline, defined as the mean of the first two observations near 06:05 and 06:10 UTC.
+
+The sampled maxima were:
+
+| Channel | Sampled peak time | Peak intensity relative to baseline |
+|---:|:---:|---:|
+| 171 Å | 06:25:12 UTC | 1.89 |
+| 193 Å | 06:40:10 UTC | 1.99 |
+| 211 Å | 06:35:03 UTC | 1.63 |
+| 304 Å | 06:25:32 UTC | 5.25 |
+
+The 171 and 304 Å sampled maxima occurred in the same five-minute interval. Their 20-second difference is below the temporal resolution of the analysis and does not establish a peak order.
+
+## 9. Comparison with GOES Soft X-ray Flux
+
+One-minute averaged GOES-15 XRS-B observations in the 1–8 Å band were compared with the AIA ROI light curves.
+
+- The 171 Å maximum occurred approximately **15.8 minutes before** the GOES maximum.
+- The 304 Å maximum occurred approximately **15.5 minutes before** the GOES maximum.
+- The 211 Å maximum occurred approximately **6.0 minutes before** the GOES maximum.
+- The 193 Å maximum occurred approximately **0.8 minutes before** the GOES maximum and was effectively coincident with it at the AIA sampling resolution.
+
+The 171 and 304 Å sampled maxima occurred during the rapid rise of the soft X-ray flux. The 211 Å maximum occurred as the X-ray flux approached its broad maximum, and the 193 Å maximum was most closely associated with the GOES maximum.
+
+## 10. Interpretation and Limitations
+
+The channel-dependent light curves indicate that different EUV-emitting structures evolved during different phases of the soft X-ray event. However, this result does not by itself establish a simple heating or cooling sequence.
+
+Important limitations include:
+
+- AIA passbands have broad and multi-thermal temperature responses.
+- The AIA curves were normalized to separate baselines, so their amplitudes are not direct measurements of relative emitted energy.
+- GOES/XRS measures full-disk irradiance, while the AIA curves represent a selected active-region ROI.
+- The five-minute AIA sampling interval cannot resolve short-lived variations or sub-minute delays.
+- The measured evolution depends on the ROI definition.
+- Bright flare-core pixels may be saturated and require a dedicated check.
+- The analysis used AIA Level 1 data. More precise spatial comparisons require pointing correction, registration, and calibration to Level 1.5.
+
+## 11. Current Outcome
+
+The warm-up and Project 1 established an end-to-end workflow for selecting a solar event, downloading multi-instrument observations, matching images in time, extracting a common ROI, constructing exposure-normalized light curves, and comparing EUV evolution with GOES soft X-ray flux.
+
+Project 1 is complete as a preliminary analysis. The next stage will focus on calibration, robustness tests, and the transition toward AIA–HMI and Parker Solar Probe projects.
