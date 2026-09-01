@@ -2,7 +2,8 @@
 
 SunProject is a personal solar-data analysis project built with SunPy and publicly available solar observations.
 
-The project began with basic SDO/AIA image processing and progressed to a time-series analysis of a solar flare. The current repository covers FITS metadata, solar coordinate systems, multi-wavelength imaging, region-of-interest analysis, exposure-normalized flare light curves, and comparison with GOES soft X-ray observations.
+The project began with basic SDO/AIA image processing and progressed to a time-series analysis of a solar flare.
+The next stage focuses on eruptive solar events, connecting low-coronal evolution observed by SDO/AIA with CME propagation observed by coronagraphs such as SOHO/LASCO and STEREO/SECCHI, and eventually with associated solar radio emission.
 
 ## Project Goals
 
@@ -11,19 +12,24 @@ The project began with basic SDO/AIA image processing and progressed to a time-s
 * Compare solar structures across multiple SDO/AIA channels
 * Perform quantitative region-of-interest intensity analysis
 * Analyze the temporal evolution of an active region and solar flare
-* Compare remote-sensing observations from multiple instruments
+* Identify and characterize eruptive solar events
+* Track the evolution from low-coronal eruption to CME propagation
+* Compare observations from SDO/AIA and coronagraphs such as SOHO/LASCO
+* Explore multi-viewpoint observations with STEREO/SECCHI
+* Investigate connections between CMEs, shocks, and solar radio bursts
 * Maintain reproducible notebooks and research notes
-* Build a foundation for future SDO, GOES, HMI, PSP, and solar-radio analyses
 
 ## Project Progress
 
-| Stage                        | Description                                                                      | Status                              |
-| ---------------------------- | -------------------------------------------------------------------------------- | ----------------------------------- |
-| SunPy warm-up                | FITS handling, metadata, coordinates, plotting, and submaps                      | Completed                           |
-| AIA multi-wavelength warm-up | Channel comparison and ROI intensity statistics                                  | Completed                           |
-| Project 1                    | Multi-wavelength evolution of the 2011 June 7 flare and comparison with GOES/XRS | Completed as a preliminary analysis |
-| Project 2                    | Comparison of AIA coronal structures with HMI magnetic fields                    | Planned                             |
-| Project 3                    | Introductory Parker Solar Probe analysis                                         | Planned                             |
+| Stage | Description | Status |
+| --- | --- | --- |
+| SunPy warm-up | FITS handling, metadata, coordinates, plotting, and submaps | Completed |
+| AIA multi-wavelength warm-up | Channel comparison and ROI intensity statistics | Completed |
+| Project 1 | Multi-wavelength evolution of the 2011 June 7 flare and comparison with GOES/XRS | Completed as a preliminary analysis |
+| Eruptive-event study preparation | Review AIA analysis, learn CME observations and catalogs, and select a representative event | In progress |
+| CME event study | Track an eruption from SDO/AIA into SOHO/LASCO C2/C3 observations | Planned |
+| Multi-viewpoint analysis | Compare the event with STEREO/SECCHI COR2 observations when available | Planned |
+| Solar-radio connection | Search for associated Type II/III radio bursts and connect them with the eruption/CME evolution | Planned |
 
 ## Repository Structure
 
@@ -315,11 +321,18 @@ Because the observation files are not stored in the repository, cloning the repo
 
 ## Next Steps
 
-Planned extensions include:
+The next phase of SunProject will move from flare-centered analysis toward an eruptive-event study connecting the low corona, CME propagation, and solar radio emission.
 
-* Calibrating and registering the AIA observations to Level 1.5
-* Repeating the flare analysis with a finer cadence near the impulsive phase
-* Testing the sensitivity of the results to the ROI definition
-* Tracking the ROI while accounting for solar rotation
-* Comparing AIA coronal structures with HMI magnetic-field observations
-* Connecting remote-sensing observations with Parker Solar Probe or solar-radio data
+Planned workflow:
+
+1. Review and consolidate the AIA analysis developed in Project 1.
+2. Select a representative flare/eruption event for detailed study.
+3. Record the GOES flare class, timing, active region, and source location.
+4. Use SDO/AIA to identify the onset and morphology of the eruption.
+5. Track filament, prominence, loop, and ejecta evolution in the low corona.
+6. Identify the associated CME in SOHO/LASCO C2 observations.
+7. Track the CME farther outward with LASCO C3.
+8. Compare the event with CME catalog measurements such as first appearance time, position angle, width, and speed.
+9. Examine STEREO/SECCHI COR2 observations when suitable data are available.
+10. Search dynamic radio spectra for associated Type II and Type III bursts.
+11. Investigate the physical connection between the eruption, CME-driven shock, and radio emission.
