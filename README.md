@@ -25,11 +25,11 @@ The next stage focuses on eruptive solar events, connecting low-coronal evolutio
 | --- | --- | --- |
 | SunPy warm-up | FITS handling, metadata, coordinates, plotting, and submaps | Completed |
 | AIA multi-wavelength warm-up | Channel comparison and ROI intensity statistics | Completed |
-| Project 1 | Multi-wavelength evolution of the 2011 June 7 flare and comparison with GOES/XRS | Completed as a preliminary analysis |
+| Preliminary flare analysis | Multi-wavelength evolution of the 2011 June 7 flare and comparison with GOES/XRS | Completed |
 | Eruptive-event study preparation | Review AIA analysis, learn CME observations and catalogs, and select a representative event | In progress |
 | CME event study | Track an eruption from SDO/AIA into SOHO/LASCO C2/C3 observations | Planned |
 | Multi-viewpoint analysis | Compare the event with STEREO/SECCHI COR2 observations when available | Planned |
-| Solar-radio connection | Search for associated Type II/III radio bursts and connect them with the eruption/CME evolution | Planned |
+| Solar-radio analysis | Search for associated Type II/III radio bursts and connect them with the eruption/CME evolution | Planned |
 
 ## Repository Structure
 
@@ -144,7 +144,7 @@ The active-region intensity profile contains strong variations and peaks associa
 
 Because saturated pixels can increase the mean and standard deviation, the median was also used to compare the typical intensities of the two regions.
 
-## Project 1: Multi-wavelength Evolution of a Solar Flare
+## Preliminary Flare Analysis: Multi-wavelength Evolution of the 2011 June 7 Flare
 
 Project 1 extends the single-image warm-up analysis into a time-series study of a specific solar flare.
 
